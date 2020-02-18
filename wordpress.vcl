@@ -33,37 +33,36 @@ sub vcl_recv {
         ban("req.url ~ /");
         return (purge);
     }
-    if ( std.port(server.ip) == 6080) {
+    
+    # set req.http.x-redir = "https://" + req.http.host + req.url;
+    #     return (synth(750, "Moved permanently"));
+    # }
 
-        # set req.http.x-redir = "https://" + req.http.host + req.url;
-        #     return (synth(750, "Moved permanently"));
-        # }
+    # drop cookies and params from static assets
+    if (req.url ~ "\.(gif|jpg|jpeg|swf|ttf|css|js|flv|mp3|mp4|pdf|ico|png)(\?.*|)$") {
+        unset req.http.cookie;
+        set req.url = regsub(req.url, "\?.*$", "");
+    }
 
-        # drop cookies and params from static assets
-        if (req.url ~ "\.(gif|jpg|jpeg|swf|ttf|css|js|flv|mp3|mp4|pdf|ico|png)(\?.*|)$") {
+    # drop tracking params
+    if (req.url ~ "\?(utm_(campaign|medium|source|term)|adParams|client|cx|eid|fbid|feed|ref(id|src)?|v(er|iew))=") {
+        set req.url = regsub(req.url, "\?.*$", "");
+    }
+
+    # pass wp-admin urls
+    if (req.url ~ "(wp-login|wp-admin)" || req.url ~ "preview=true" || req.url ~ "xmlrpc.php") {
+        return (pass);
+    }
+
+    # pass wp-admin cookies
+    if (req.http.cookie) {
+        if (req.http.cookie ~ "(wordpress_|wp-settings-)") {
+                return(pass);
+        } else {
             unset req.http.cookie;
-            set req.url = regsub(req.url, "\?.*$", "");
-        }
-
-        # drop tracking params
-        if (req.url ~ "\?(utm_(campaign|medium|source|term)|adParams|client|cx|eid|fbid|feed|ref(id|src)?|v(er|iew))=") {
-            set req.url = regsub(req.url, "\?.*$", "");
-        }
-
-        # pass wp-admin urls
-        if (req.url ~ "(wp-login|wp-admin)" || req.url ~ "preview=true" || req.url ~ "xmlrpc.php") {
-            return (pass);
-        }
-
-        # pass wp-admin cookies
-        if (req.http.cookie) {
-            if (req.http.cookie ~ "(wordpress_|wp-settings-)") {
-                  return(pass);
-            } else {
-              unset req.http.cookie;
-            }
         }
     }
+
 }
 
 
