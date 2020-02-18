@@ -10,11 +10,12 @@ var _timeout,
 
 setInterval(function () {
     dns.resolve(process.env.BACKEND_HOST, function (err, ips) {
+        ips.sort();
         let port = process.env.BACKEND_PORT || 80;
         let str_ips = JSON.stringify(ips);
 
         console.log('varnish backends: ' + str_ips);
-
+        
         if (current_ips != str_ips) {
             current_ips = str_ips;
 
