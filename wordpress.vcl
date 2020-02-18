@@ -17,9 +17,6 @@ sub vcl_init {
 sub vcl_recv {
     set req.backend_hint = vdir.backend();
     
-    # Only a single backend
-    set req.backend_hint= default;
-
     # Setting http headers for backend
     set req.http.X-Forwarded-For = client.ip;
     # set req.http.X-Forwarded-Proto = "https";
