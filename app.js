@@ -15,9 +15,9 @@ setInterval(function () {
         let str_ips = JSON.stringify(ips);
         let vcf_file = process.env.VCL_FILE || 'default';
 
-        console.log('varnish backends: ' + str_ips);
         
         if (current_ips != str_ips) {
+            console.log('varnish backends: ' + str_ips);
             current_ips = str_ips;
 
             let vcl = "";
@@ -48,7 +48,7 @@ setInterval(function () {
 
                 if (!started) {
                     console.log('starting varnish');
-                    exec("varnishd -F -f /etc/varnish/${vcf_file}.vcl", function (err, stdout, stderr   ) {
+                    exec(`varnishd -F -f /etc/varnish/${vcf_file}.vcl`, function (err, stdout, stderr   ) {
                         console.log(err, stdout, stderr);
                     });
 
