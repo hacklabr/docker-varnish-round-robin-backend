@@ -50,6 +50,8 @@ setInterval(function () {
                     exec("varnishd -F -f /etc/varnish/default.vcl", function (err, stdout, stderr   ) {
                         console.log(err, stdout, stderr);
                     });
+
+                    started = true;
                 }
             
                 if (_timeout) {
