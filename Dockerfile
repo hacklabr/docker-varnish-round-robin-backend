@@ -3,9 +3,10 @@ FROM varnish:6
 RUN apt update
 RUN apt install -y nodejs
 
-RUN mkdir /app
-COPY app.js /app/app.js
-COPY default.vcl /etc/varnish/default.vcl
+COPY daemon.js /daemon.js
+COPY empty.vcl /etc/varnish/empty.vcl
 COPY wordpress.vcl /etc/varnish/wordpress.vcl
 
-CMD ["/usr/bin/nodejs", "/app/app.js"]
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT [ "/entrypoint.sh" ]

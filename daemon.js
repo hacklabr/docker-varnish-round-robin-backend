@@ -5,10 +5,9 @@ const exec = require('child_process').exec;
 const dns = require('dns');
 
 var _timeout,
-    started = false,
     current_ips = '';
 
-setInterval(function () {
+function create_backends_vcl_file() {
     dns.resolve(process.env.BACKEND_HOST, function (err, ips) {
         ips.sort();
         let port = process.env.BACKEND_PORT || 80;
@@ -41,18 +40,9 @@ setInterval(function () {
             }
             vcl += `\n}`;
 
-            fs.writeFile("/etc/varnish/backends.vcl", vcl, function(err) {
-                if(err) {
+            fs.writeFile("/etc/varnish/backends.vcl", vcl, function (err) {
+                if (err) {
                     return console.log(err);
-                }
-
-                if (!started) {
-                    console.log('starting varnish');
-                    exec(`varnishd -F -f ${vcf_file}`, function (err, stdout, stderr   ) {
-                        console.log(err, stdout, stderr);
-                    });
-
-                    started = true;
                 }
             
                 if (_timeout) {
@@ -63,10 +53,14 @@ setInterval(function () {
                 _timeout = setTimeout(() => {
                     console.log('reloading varnish');
                     exec('varnishreload');
-                },1000);
-            }); 
-            
-
+                }, 1000);
+            });
         }
-    })
-},500)
+    });
+}
+
+create_backends_vcl_file();
+
+setTimeout(function () {
+    setInterval(create_backends_vcl_file, 500);
+}, 5000)
