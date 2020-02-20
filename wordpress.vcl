@@ -60,7 +60,7 @@ sub vcl_recv {
     }
 
     # pass wp-admin urls
-    if (req.url ~ "(wp-login|wp-admin)" || req.url ~ "preview=true" || req.url ~ "xmlrpc.php") {
+    if (req.url ~ "(wp-login|wp-admin|adm-[^\/]+)" || req.url ~ "preview=true" || req.url ~ "xmlrpc.php") {
         return (pass);
     }
 
@@ -123,7 +123,7 @@ sub vcl_backend_response {
     }
 
     # unset cookies from backendresponse
-    if (!(bereq.url ~ "(wp-login|wp-admin)"))  {
+    if (!(bereq.url ~ "(wp-login|wp-admin|adm-[^\/]+)"))  {
         set beresp.http.X-UnsetCookies = "TRUE";
         unset beresp.http.set-cookie;
         set beresp.ttl = 1h;
