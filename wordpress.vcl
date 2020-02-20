@@ -23,7 +23,6 @@ sub vcl_recv {
 
     # Unset headers that might cause us to cache duplicate infos
     unset req.http.Accept-Language;
-    unset req.http.User-Agent;
 
     # The purge...no idea if this works
     if (req.method == "PURGE") {
