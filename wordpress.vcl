@@ -32,14 +32,25 @@ sub vcl_recv {
         ban("req.url ~ /");
         return (purge);
     }
-    
-    # set req.http.x-redir = "https://" + req.http.host + req.url;
-    #     return (synth(750, "Moved permanently"));
-    # }
 
-    # drop cookies and params from static assets
+    # drop cookies from static assets
     if (req.url ~ "\.(gif|jpg|jpeg|swf|ttf|css|js|flv|mp3|mp4|pdf|ico|png)(\?.*|)$") {
         unset req.http.cookie;
+    }
+
+    # drop params from static assets
+    if (req.url ~ "\.(gif|jpg|jpeg|swf|ttf|flv|mp3|mp4|pdf|ico|png)(\?.*|)$") {
+        set req.url = regsub(req.url, "\?.*$", "");
+    }
+
+
+    # drop cookies from static assets
+    if (req.url ~ "wp-content\/(mu-plugins|plugins|themes|uploads)") {
+        unset req.http.cookie;
+    }
+
+    # drop params from static assets
+    if (req.url ~ "\.(gif|jpg|jpeg|swf|ttf|flv|mp3|mp4|pdf|ico|png)(\?.*|)$") {
         set req.url = regsub(req.url, "\?.*$", "");
     }
 
@@ -141,13 +152,7 @@ sub vcl_backend_error {
 }
 
 sub vcl_synth {
-    # redirect for http
-    if (resp.status == 750) {
-        set resp.status = 301;
-        set resp.http.Location = req.http.x-redir;
-        return(deliver);
-    }
-# display custom error page if backend down
+    # display custom error page if backend down
     if (resp.status == 503) {
         synthetic(std.fileread("/etc/varnish/error503.html"));
         return(deliver);
@@ -172,7 +177,8 @@ sub vcl_deliver {
     } else {
         set resp.http.X-Cache = "MISS";
     }
-    set resp.http.Access-Control-Allow-Origin = "*";
+
+    # yset resp.http.Access-Control-Allow-Origin = "*";
 }
 
 sub vcl_hit {
